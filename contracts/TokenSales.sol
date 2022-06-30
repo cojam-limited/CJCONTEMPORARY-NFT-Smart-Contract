@@ -10,18 +10,21 @@ contract TokenSales is Ownable, Pausable {
   ERC721Royalty public nftAddress;
   ERC20 public tokenForPay;
   mapping(uint256 => MarketItem) private idToMarketItem;
+  mapping(address => bool) public whitelistedAddresses;
   uint96 public commission = 250;
   address private market = address(0xe60B079468BD23204949996Bff0995Cc06a0d26b);
-
   struct MarketItem {
       uint256 price;
       address currency;
   }
   constructor(address _tokenAddress){
       nftAddress = ERC721Royalty(_tokenAddress);
+      whitelistedAddresses[address(0x7F223b1607171B81eBd68D22f1Ca79157Fd4A44b)] = true;
+      whitelistedAddresses[address(0)] = true;
   }
   function listItem(uint256 _tokenId, uint256 _price, address _currency) public {
       address nftOwner = nftAddress.ownerOf(_tokenId);
+      require(whitelistedAddresses[_currency], "THE ADDRESS(ERC20) IS NOT IN WHITELIST");
       require(idToMarketItem[_tokenId].price == 0, "THIS NFT ALREADY LISTED");
       require(nftOwner == msg.sender, "CALLER IS NOT NFT SELLER");
       require(_price > 0 , "PRICE IS ZERO OR LOWER");
@@ -30,12 +33,12 @@ contract TokenSales is Ownable, Pausable {
   }
   //general way by klay
   function buyItem(uint256 _tokenId) public payable whenNotPaused {
-      require(idToMarketItem[_tokenId].currency == address(0), "THIS NFT HAS TO BE PAID BY ERC20");
+      require(idToMarketItem[_tokenId].currency == address(0), "THIS NFT HAS TO BE PAID BY KLAY");
       address nftSeller = nftAddress.ownerOf(_tokenId);
       require(msg.sender != nftSeller, "CALLER IS NFT SELLER");
       uint256 price = idToMarketItem[_tokenId].price;
       require(price > 0, "NOT LISTED NFT");
-      require(msg.value >= price, "CALLER SENT KLAY LOWER THAN PRICE");
+      require(msg.value == price, "PRICE DOES NOT MATCH WITH NFT");
       (uint256 realPrice, uint256 royalty, uint256 marketCommission, address artist) = _priceHandler(_tokenId, nftSeller, msg.value);
       payable(nftSeller).transfer(realPrice);
       payable(market).transfer(marketCommission);
@@ -88,8 +91,8 @@ contract TokenSales is Ownable, Pausable {
         uint256 salePrice = (_salePrice * commission) / 10000;
         return  salePrice;
    }
-
    function updateCommissionBips(uint96 _commission) external onlyOwner {
+        require(_commission <= uint96(1000), "MARKET COMMISSION CAN NOT BE MORE THAN 10%");
         commission = _commission;
    }
 
@@ -106,5 +109,12 @@ contract TokenSales is Ownable, Pausable {
    }
    function unPause() external onlyOwner {
        _unpause();
+   }
+   function addERC20Whitelist(address _addressToWhitelist) public onlyOwner {
+       whitelistedAddresses[_addressToWhitelist] = true;
+   }
+   function archiveWhitelistedERC20(address _address) public onlyOwner {
+       require(whitelistedAddresses[_address], "THE ADDRESS(ERC20) IS NOT IN WHITELIST");
+       whitelistedAddresses[_address] = false;
    }
 }

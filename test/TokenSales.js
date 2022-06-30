@@ -17,6 +17,7 @@ function toWei(num) {
 contract('TokenSales', (accounts) => {
     let [admin, artist, owner1, owner2, marketFee] = accounts;
     let token, nft, market;
+    let unListedToken = '0x5e9456756afef83dddfa6416c8f96ff7c8aae8ce'
     let uri = "http://example.com";
     let address0 = '0x0000000000000000000000000000000000000000';
     const price = toWei('10','ether');
@@ -30,7 +31,7 @@ contract('TokenSales', (accounts) => {
         await token.transfer(owner1, toWei('100', 'ether'));
         await token.transfer(owner2, toWei('100', 'ether'));
 
-        market = await TokenSales.new(nft.address);
+        market = await TokenSales.new(nft.address, token.address);
 
         assert.equal(await market.nftAddress(), nft.address);
     })
@@ -56,6 +57,11 @@ contract('TokenSales', (accounts) => {
 
             assert.equal(toNum(result[0]), 10);
             assert.equal(result[1], token.address);
+        });
+
+        it('should reject list - THE ADDRESS(ERC20) IS NOT IN WHITELIST', async () => {
+            return await expect(market.listItem(0, price, unListedToken, {from: artist}))
+            .to.be.rejectedWith("THE ADDRESS(ERC20) IS NOT IN WHITELIST");
         });
 
         it('should reject list - THIS NFT ALREADY LISTED', async () => {
@@ -139,13 +145,13 @@ contract('TokenSales', (accounts) => {
             assert.equal(result[3], artist);
         })
 
-        it('should reject priceHandler function - Calculation is wrong ', async () => {
-            await nft.safeMint(8000, uri);
-            await market.updateCommissionBips(2500)
+        // it('should reject priceHandler function - Calculation is wrong ', async () => {
+        //     await nft.safeMint(9000, uri);
+        //     await market.updateCommissionBips(1000)
 
-            return await expect(market._priceHandler(2, owner1, price))
-            .to.be.rejectedWith("CALCULATION IS WRONG");
-        })
+        //     return await expect(market._priceHandler(2, owner1, price))
+        //     .to.be.rejectedWith("CALCULATION IS WRONG");
+        // })
     })
 
     describe('buyItemByERC20', () => {
@@ -313,11 +319,11 @@ contract('TokenSales', (accounts) => {
             assert.equal(info[0], 0);
         })
 
-        it('should reject buyItem - THIS NFT HAS TO BE PAID BY ERC20', async () => {
+        it('should reject buyItem - THIS NFT HAS TO BE PAID BY KLAY', async () => {
             await market.listItem(0, price, token.address, {from: artist});
 
             return await expect(market.buyItem(0, {from : owner1, value : price}))
-            .to.be.rejectedWith("THIS NFT HAS TO BE PAID BY ERC20");
+            .to.be.rejectedWith("THIS NFT HAS TO BE PAID BY KLAY");
          })
 
          it('should reject buyItem - CALLER IS NFT SELLER', async () => {
@@ -332,12 +338,12 @@ contract('TokenSales', (accounts) => {
             .to.be.rejectedWith("NOT LISTED NFT");
          })
 
-         it('should reject buyItem - CALLER SENT KLAY LOWER THAN PRICE', async () => {
+         it('should reject buyItem - PRICE DOES NOT MATCH WITH NFT', async () => {
             await market.listItem(0, price, address0, {from: artist});
-            const lowerPrice = toWei('8','ether');
+            const lowerPrice = toWei('12','ether');
 
             return await expect(market.buyItem(0, {from : owner1, value : lowerPrice}))
-            .to.be.rejectedWith("CALLER SENT KLAY LOWER THAN PRICE");
+            .to.be.rejectedWith("PRICE DOES NOT MATCH WITH NFT");
          })
 
          it('should reject buyItem - WHEN IS PUASED BY ADMIN', async () => {
@@ -361,12 +367,48 @@ contract('TokenSales', (accounts) => {
             return await expect(market.updateCommissionBips(1000, {from: artist}))
             .to.be.rejectedWith("Ownable: caller is not the owner");
         })
+
+        it('should not update commission - MARKET COMMISSION CAN NOT MORE THAN 10% ', async () => {
+            return await expect(market.updateCommissionBips(1001, {from: admin}))
+            .to.be.rejectedWith("MARKET COMMISSION CAN NOT MORE THAN 10%");
+        })
     })
 
     describe('updateCommissionAddress', ()=> {
         it('should not update address - ONLY ADMIN', async () => {
             return await expect( market.updateCommissionAddress(artist, {from: owner1}))
             .to.be.rejectedWith("Ownable: caller is not the owner");
+        })
+    })
+
+    describe('addERC20Whitelist', ()=> {
+        it('should add address(erc20) as whitelist', async () => {
+            await market.addERC20Whitelist(unListedToken, {from: admin})
+            
+            assert.isTrue(await market.whitelistedAddresses(unListedToken))
+        })
+
+        it('should reject addERC20Whitelist - ONLY ADMIN', async () => {
+            return await expect( market.addERC20Whitelist(unListedToken, {from: owner1}))
+            .to.be.rejectedWith("Ownable: caller is not the owner");
+        })
+    })
+
+    describe('archiveWhitelistedERC20', ()=> {
+        it('should archive whitedlisted address(erc20)', async () => {
+            await market.archiveWhitelistedERC20(address0, {from: admin})
+            
+            assert.isFalse(await market.whitelistedAddresses(address0))
+        })
+
+        it('should reject archiveWhitelistedERC20 - ONLY ADMIN', async () => {
+            return await expect( market.archiveWhitelistedERC20(address0, {from: owner1}))
+            .to.be.rejectedWith("Ownable: caller is not the owner");
+        })
+
+        it('should reject archiveWhitelistedERC20 - THE ADDRESS(ERC20) IS NOT IN WHITELIST', async () => {
+            return await expect( market.archiveWhitelistedERC20(unListedToken, {from: admin}))
+            .to.be.rejectedWith("THE ADDRESS(ERC20) IS NOT IN WHITELIST");
         })
     })
 })

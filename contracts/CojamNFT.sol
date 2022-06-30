@@ -11,10 +11,12 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract CojamNFT is ERC721Royalty, ERC721URIStorage, ERC721Enumerable, ERC721Burnable, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
+    mapping(address => bool) private whitelistedAddresses;
     constructor() ERC721("COJAM NFT IRELAND", "CNT") {
+        whitelistedAddresses[msg.sender] = true;
     }
-    function safeMint(uint96 _royaltyFeeArtist, string memory _tokenURI) public {
-        require(_royaltyFeeArtist < uint96(5000), "can not over 50% for royalty");
+    function safeMint(uint96 _royaltyFeeArtist, string memory _tokenURI) public onlyWhitelisted {
+        require(_royaltyFeeArtist <= uint96(5000), "can not over 50% for royalty");
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
@@ -47,5 +49,18 @@ contract CojamNFT is ERC721Royalty, ERC721URIStorage, ERC721Enumerable, ERC721Bu
         override(ERC721, ERC721Enumerable)
     {
         super._beforeTokenTransfer(from, to, tokenId);
+    }
+    function addUserToWhitelist(address _addressToWhitelist) public onlyOwner {
+        whitelistedAddresses[_addressToWhitelist] = true;
+   }
+   function archiveWhitelistedUser(address _address) public onlyOwner {
+        whitelistedAddresses[_address] = false;
+   }
+   function isWhitelisted(address _address) public view returns (bool) {
+       return whitelistedAddresses[_address];
+   }
+   modifier onlyWhitelisted() {
+       require(isWhitelisted(msg.sender), "THE USER IS NOT IN WHITELIST");
+       _;
     }
 }
