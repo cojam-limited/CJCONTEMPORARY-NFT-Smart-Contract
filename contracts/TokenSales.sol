@@ -19,7 +19,6 @@ contract TokenSales is Ownable, Pausable {
   }
   constructor(address _tokenAddress){
       nftAddress = ERC721Royalty(_tokenAddress);
-      whitelistedAddresses[address(0x7F223b1607171B81eBd68D22f1Ca79157Fd4A44b)] = true;
       whitelistedAddresses[address(0)] = true;
   }
   function listItem(uint256 _tokenId, uint256 _price, address _currency) public {

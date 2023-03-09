@@ -12,7 +12,7 @@ contract CojamNFT is ERC721Royalty, ERC721URIStorage, ERC721Enumerable, ERC721Bu
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
     mapping(address => bool) private whitelistedAddresses;
-    constructor() ERC721("COJAM NFT IRELAND", "CNT") {
+    constructor() ERC721("Unilapse", "UNI") {
         whitelistedAddresses[msg.sender] = true;
     }
     function safeMint(uint96 _royaltyFeeArtist, string memory _tokenURI) public onlyWhitelisted {

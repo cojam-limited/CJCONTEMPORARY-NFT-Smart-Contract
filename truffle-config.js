@@ -1,11 +1,8 @@
 require('dotenv').config();
 const Caver = require('caver-js');
-const HDWalletProvider = require("truffle-hdwallet-provider-klaytn");
+const HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProviderKlaytn = require("truffle-hdwallet-provider-klaytn");
 
-const NETWORK_ID = "1001";
-const GASLIMIT = "20000000";
-// var GAS_PRICE = new Caver.klay.getGasPrice()
-const URL = `https://api.baobab.klaytn.net:8651`;
 const { 
   PRIVATE_KEY_KLAY_BAOBAB,
   PRIVATE_KEY_KLAY_BAOBAB2,
@@ -13,8 +10,10 @@ const {
   PRIVATE_KEY_KLAY_CYPRESS, 
   ACCESS_KEY, 
   SECRET_ACCESS_KEY,
+  INFURA_KEY,
   ACCESS_KEY_CYPRESS,
-  SECRET_ACCESS_KEY_CYPRESS
+  SECRET_ACCESS_KEY_CYPRESS,
+  SECRET_ACCESS_KEY_GOERLI
  } = process.env
 
 module.exports = {
@@ -25,12 +24,24 @@ module.exports = {
       port: 8545,
       network_id: "*", // Match any network id
     },
-
-    klaytn: {
-      provider: new HDWalletProvider([PRIVATE_KEY_KLAY_BAOBAB2 ,PRIVATE_KEY_KLAY_BAOBAB, PRIVATE_KEY_KLAY_BAOBAB3], URL),
-      network_id: NETWORK_ID,
-      gas: GASLIMIT,
-      gasPrice: null,
+    mainnet: {
+      provider: () => {
+        return new HDWalletProvider(
+          PRIVATE_KEY_ETH,
+          `https://mainnet.infura.io/v3/${INFURA_KEY}`
+        );
+      },
+      port: 8545,
+      network_id: 1,
+    },
+    goerli: {
+      provider: function() {
+        return new HDWalletProvider(SECRET_ACCESS_KEY_GOERLI, `https://goerli.infura.io/v3/${INFURA_KEY}`);
+      },
+      port: 8545,
+      network_id: '5',
+      skipDryRun: true,
+      networkCheckTimeout: 10000
     },
 
     kasBaobab:  {
@@ -49,7 +60,7 @@ module.exports = {
           ],
           keepAlive: false,
         };
-        return new HDWalletProvider(
+        return new HDWalletProviderKlaytn(
           PRIVATE_KEY_KLAY_BAOBAB,
           new Caver.providers.HttpProvider(
             "https://node-api.klaytnapi.com/v1/klaytn",
@@ -78,7 +89,7 @@ module.exports = {
           ],
           keepAlive: false,
         };
-        return new HDWalletProvider(
+        return new HDWalletProviderKlaytn(
           PRIVATE_KEY_KLAY_CYPRESS,
           new Caver.providers.HttpProvider(
             "https://node-api.klaytnapi.com/v1/klaytn",
