@@ -1,10 +1,10 @@
-const CojamNFT = artifacts.require("./CojamNFT.sol");
+const NFT = artifacts.require("./NFT.sol");
 const TokenSales = artifacts.require('./TokenSales.sol');
 const fs = require("fs");
 
 module.exports = function (deployer) {
 
-  deployer.deploy(TokenSales, CojamNFT.address).then(() => {
+  deployer.deploy(TokenSales, NFT.address).then(() => {
     if (TokenSales._json) {
       fs.writeFile(
         "deployedABI_TokenSales",

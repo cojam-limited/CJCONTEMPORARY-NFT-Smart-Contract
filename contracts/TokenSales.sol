@@ -13,14 +13,17 @@ contract TokenSales is Ownable, Pausable {
   mapping(address => bool) public whitelistedAddresses;
   uint96 public commission = 250;
   address private market = address(0xe60B079468BD23204949996Bff0995Cc06a0d26b);
+
   struct MarketItem {
       uint256 price;
       address currency;
   }
+
   constructor(address _tokenAddress){
       nftAddress = ERC721Royalty(_tokenAddress);
       whitelistedAddresses[address(0)] = true;
   }
+
   function listItem(uint256 _tokenId, uint256 _price, address _currency) public {
       address nftOwner = nftAddress.ownerOf(_tokenId);
       require(whitelistedAddresses[_currency], "THE ADDRESS(ERC20) IS NOT IN WHITELIST");
@@ -115,5 +118,8 @@ contract TokenSales is Ownable, Pausable {
    function archiveWhitelistedERC20(address _address) public onlyOwner {
        require(whitelistedAddresses[_address], "THE ADDRESS(ERC20) IS NOT IN WHITELIST");
        whitelistedAddresses[_address] = false;
+   }
+   function setMarketFeeAccount(address _account) public onlyOwner {
+       market = _account;
    }
 }

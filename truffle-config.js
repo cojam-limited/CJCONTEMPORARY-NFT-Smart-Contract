@@ -1,6 +1,6 @@
 require('dotenv').config();
 const Caver = require('caver-js');
-const HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 const HDWalletProviderKlaytn = require("truffle-hdwallet-provider-klaytn");
 
 const { 
@@ -13,7 +13,10 @@ const {
   INFURA_KEY,
   ACCESS_KEY_CYPRESS,
   SECRET_ACCESS_KEY_CYPRESS,
-  SECRET_ACCESS_KEY_GOERLI
+  SECRET_ACCESS_KEY_GOERLI,
+  SECRET_ACCESS_KEY_MUMBAL,
+  SECRET_ACCESS_KEY_MATIC,
+  SECRET_ACCESS_KEY_MUMBAL2
  } = process.env
 
 module.exports = {
@@ -40,8 +43,34 @@ module.exports = {
       },
       port: 8545,
       network_id: '5',
-      skipDryRun: true,
-      networkCheckTimeout: 10000
+      skipDryRun: false,
+      networkCheckTimeout: 10000,
+    },
+    sepolia: {
+      provider: function() {
+        return new HDWalletProvider(SECRET_ACCESS_KEY_GOERLI, `https://sepolia.infura.io/v3/${INFURA_KEY}`);
+      },
+      port: 8545,
+      network_id: '11155111',
+      skipDryRun: false,
+      networkCheckTimeout: 10000,
+    },
+    mumbai: {
+      provider: () => {
+        return new HDWalletProvider([SECRET_ACCESS_KEY_MUMBAL, SECRET_ACCESS_KEY_MUMBAL2], `https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78`)
+      },
+      network_id: 80001,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true
+    },
+
+    matic: {
+      provider: () => new HDWalletProvider(SECRET_ACCESS_KEY_MATIC, `https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78`),
+      network_id: 137,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true
     },
 
     kasBaobab:  {
@@ -101,8 +130,6 @@ module.exports = {
       gas: "8500000",
       gasPrice: null,
     },
-
-
   },
 
   // Set default mocha options here, use special reporters etc.
