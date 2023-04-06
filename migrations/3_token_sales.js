@@ -1,10 +1,10 @@
-const NFT = artifacts.require("./NFT.sol");
+const UnilapseNFT = artifacts.require("./UnilapseNFT.sol");
 const TokenSales = artifacts.require('./TokenSales.sol');
 const fs = require("fs");
 
 module.exports = function (deployer) {
 
-  deployer.deploy(TokenSales, NFT.address).then(() => {
+  deployer.deploy(TokenSales, UnilapseNFT.address).then(() => {
     if (TokenSales._json) {
       fs.writeFile(
         "deployedABI_TokenSales",

@@ -12,7 +12,7 @@ contract TokenSales is Ownable, Pausable {
   mapping(uint256 => MarketItem) private idToMarketItem;
   mapping(address => bool) public whitelistedAddresses;
   uint96 public commission = 250;
-  address private market = address(0xe60B079468BD23204949996Bff0995Cc06a0d26b);
+  address private market = address(0x028DcD36390BD33edd07bA983444b27ecEA23A3a);
 
   struct MarketItem {
       uint256 price;

@@ -5,8 +5,6 @@ const HDWalletProviderKlaytn = require("truffle-hdwallet-provider-klaytn");
 
 const { 
   PRIVATE_KEY_KLAY_BAOBAB,
-  PRIVATE_KEY_KLAY_BAOBAB2,
-  PRIVATE_KEY_KLAY_BAOBAB3,
   PRIVATE_KEY_KLAY_CYPRESS, 
   ACCESS_KEY, 
   SECRET_ACCESS_KEY,
@@ -16,7 +14,7 @@ const {
   SECRET_ACCESS_KEY_GOERLI,
   SECRET_ACCESS_KEY_MUMBAL,
   SECRET_ACCESS_KEY_MATIC,
-  SECRET_ACCESS_KEY_MUMBAL2
+  SECRET_ACCESS_KEY_MAIN
  } = process.env
 
 module.exports = {
@@ -30,12 +28,14 @@ module.exports = {
     mainnet: {
       provider: () => {
         return new HDWalletProvider(
-          PRIVATE_KEY_ETH,
+          SECRET_ACCESS_KEY_MAIN,
           `https://mainnet.infura.io/v3/${INFURA_KEY}`
         );
       },
       port: 8545,
       network_id: 1,
+      skipDryRun: false,
+      networkCheckTimeout: 10000
     },
     goerli: {
       provider: function() {
@@ -57,20 +57,21 @@ module.exports = {
     },
     mumbai: {
       provider: () => {
-        return new HDWalletProvider([SECRET_ACCESS_KEY_MUMBAL, SECRET_ACCESS_KEY_MUMBAL2], `https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78`)
+        return new HDWalletProvider(SECRET_ACCESS_KEY_MUMBAL, `https://polygon-mumbai.infura.io/v3/${INFURA_KEY}`)
       },
       network_id: 80001,
       confirmations: 2,
       timeoutBlocks: 200,
-      skipDryRun: true
+      skipDryRun: false
     },
 
     matic: {
-      provider: () => new HDWalletProvider(SECRET_ACCESS_KEY_MATIC, `https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78`),
+      provider: () => new HDWalletProvider(SECRET_ACCESS_KEY_MATIC, `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`),
       network_id: 137,
       confirmations: 2,
       timeoutBlocks: 200,
-      skipDryRun: true
+      gasPrice: 150000000000,
+      skipDryRun: false
     },
 
     kasBaobab:  {

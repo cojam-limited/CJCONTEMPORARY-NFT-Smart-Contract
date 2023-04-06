@@ -1,12 +1,12 @@
-const NFT = artifacts.require("./NFT.sol");
+const UnilapseNFT = artifacts.require("./UnilapseNFT.sol");
 const fs = require("fs");
 
 module.exports = function (deployer) {
-  deployer.deploy(NFT).then(()=> {
-    if (NFT._json) {
+  deployer.deploy(UnilapseNFT).then(()=> {
+    if (UnilapseNFT._json) {
       fs.writeFile(
-        "deployedABI_NFT",
-        JSON.stringify(NFT._json.abi),
+        "deployedABI_UnilapseNFT",
+        JSON.stringify(UnilapseNFT._json.abi),
         (err) => {
           if (err) throw err;
           console.log("파일에 ABI 입력 성공");
@@ -14,7 +14,7 @@ module.exports = function (deployer) {
       );
     }
 
-    fs.writeFile("deployedAddress_NFT", NFT.address, (err) => {
+    fs.writeFile("deployedAddress_UnilapseNFT", UnilapseNFT.address, (err) => {
       if (err) throw err;
       console.log("파일에 주소 입력 성공");
     });

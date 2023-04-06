@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract CJNFT is ERC721Royalty, ERC721URIStorage, ERC721Enumerable, ERC721Burnable, Ownable {
+contract UnilapseNFT is ERC721Royalty, ERC721URIStorage, ERC721Enumerable, ERC721Burnable, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
     mapping(address => bool) private whitelistedAddresses;
