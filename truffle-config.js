@@ -14,11 +14,13 @@ const {
   SECRET_ACCESS_KEY_GOERLI,
   SECRET_ACCESS_KEY_MUMBAL,
   SECRET_ACCESS_KEY_MATIC,
-  SECRET_ACCESS_KEY_MAIN
+  SECRET_ACCESS_KEY_MAIN,
+  PRIVATE_KEY_BSCTEST,
+  PRIVATE_KEY_KLAY_CYPRESS_NEW,
+  CHAIN_STACK_API_KEY
  } = process.env
 
 module.exports = {
-
   networks: {
     ganache: {
       host: "localhost",
@@ -70,8 +72,39 @@ module.exports = {
       network_id: 137,
       confirmations: 2,
       timeoutBlocks: 200,
-      gasPrice: 150000000000,
+      gasPrice: 400000000000,
       skipDryRun: false
+    },
+    bscTestnet: {
+      provider: () => {
+        return new HDWalletProvider(
+          PRIVATE_KEY_BSCTEST,
+          `https://bnbsmartchain-testnet.infura.io/v3/${INFURA_KEY}`,
+          0,
+          2
+        );
+      },
+      port: 8545,
+      network_id: 97,
+      gasPrice: 5000000000,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+    },
+
+    bscMainnet: {
+      provider: () => {
+        return new HDWalletProvider(
+          SECRET_ACCESS_KEY_MATIC,
+          `https://nd-120-875-210.p2pify.com/${CHAIN_STACK_API_KEY}`
+        );
+      },
+      network_id: 56,
+      gasPrice: 3000000000,
+      networkCheckTimeout: 10000,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true,
     },
 
     kasBaobab:  {
@@ -120,7 +153,7 @@ module.exports = {
           keepAlive: false,
         };
         return new HDWalletProviderKlaytn(
-          PRIVATE_KEY_KLAY_CYPRESS,
+          PRIVATE_KEY_KLAY_CYPRESS_NEW,
           new Caver.providers.HttpProvider(
             "https://node-api.klaytnapi.com/v1/klaytn",
             option

@@ -7,12 +7,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract TokenSales is Ownable, Pausable {
+  event ListItem(uint256 tokenId, uint256 price, address currency);
+  event BuyItem(address buyer, uint256 tokenId);
+  event CancelListedItem(uint256 tokenId);
+
   ERC721Royalty public nftAddress;
   ERC20 public tokenForPay;
   mapping(uint256 => MarketItem) private idToMarketItem;
   mapping(address => bool) public whitelistedAddresses;
   uint96 public commission = 250;
-  address private market = address(0x028DcD36390BD33edd07bA983444b27ecEA23A3a);
+  address private market = address(0x3a676a599fC10631126910b163D404aFC4093865);
 
   struct MarketItem {
       uint256 price;
@@ -32,6 +36,8 @@ contract TokenSales is Ownable, Pausable {
       require(_price > 0 , "PRICE IS ZERO OR LOWER");
       require(nftAddress.getApproved(_tokenId) == address(this), "NFT OWNER DID NOT APPROVE TOKENSALES CONTRACT");
       idToMarketItem[_tokenId] = MarketItem(_price, _currency);
+
+      emit ListItem(_tokenId, _price, _currency);
   }
   //general way by klay
   function buyItem(uint256 _tokenId) public payable whenNotPaused {
@@ -49,6 +55,8 @@ contract TokenSales is Ownable, Pausable {
       }
       nftAddress.safeTransferFrom(nftSeller, msg.sender, _tokenId);
       idToMarketItem[_tokenId].price= 0;
+
+      emit BuyItem(msg.sender, _tokenId);
   }
   // pay by ERC20token
   function buyItemByERC20(uint256 _tokenId, address _tokenAddress, uint256 _price) public whenNotPaused {
@@ -67,12 +75,16 @@ contract TokenSales is Ownable, Pausable {
       }
       nftAddress.safeTransferFrom(nftSeller, msg.sender, _tokenId);
       idToMarketItem[_tokenId] = MarketItem(0, address(0));
+
+      emit BuyItem(msg.sender, _tokenId);
   }
   function cancelListedItem(uint256 _tokenId) public {
       require(idToMarketItem[_tokenId].price > 0, "NO PRICE IN THIS TOKEN");
       address nftSeller = nftAddress.ownerOf(_tokenId);
       require(msg.sender == nftSeller, "CALLER IS NOT NFT SELLER");
       idToMarketItem[_tokenId] = MarketItem(0, address(0));
+
+      emit CancelListedItem(_tokenId);
   }
   function _priceHandler(uint256 _tokenId, address _nftSeller, uint256 _price) internal view returns(uint256, uint256, uint256, address){
       uint256 royalty;
